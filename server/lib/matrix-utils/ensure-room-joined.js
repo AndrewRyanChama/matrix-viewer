@@ -39,27 +39,19 @@ async function ensureRoomJoined(
     qs.append('server_name', viaServer);
   });
 
-  const joinEndpoint = urlJoin(
+  const leEndpoint = urlJoin(
     matrixServerUrl,
-    `_matrix/client/r0/join/${encodeURIComponent(roomIdOrAlias)}?${qs.toString()}`
+    `_matrix/client/v3/directory/room/${encodeURIComponent(roomIdOrAlias)}?${qs.toString()}`
   );
   try {
-    const { data: joinData } = await fetchEndpointAsJson(joinEndpoint, {
-      method: 'POST',
+    const { data: joinData } = await fetchEndpointAsJson(leEndpoint, {
+      method: 'GET',
       accessToken,
-      abortSignal,
-      body: {
-        reason:
-          `Joining room to check history visibility. ` +
-          `If your room is public with shared or world readable history visibility, ` +
-          `it will be accessible on ${matrixViewerURLCreator.roomDirectoryUrl()}. ` +
-          `See the FAQ for more details: ` +
-          `https://github.com/matrix-org/matrix-viewer/blob/main/docs/faq.md#why-did-the-bot-join-my-room`,
-      },
+      abortSignal
     });
     assert(
       joinData.room_id,
-      `Join endpoint (${joinEndpoint}) did not return \`room_id\` as expected. This is probably a problem with that homeserver.`
+      `Join endpoint (${leEndpoint}) did not return \`room_id\` as expected. This is probably a problem with that homeserver.`
     );
     return joinData.room_id;
   } catch (err) {
