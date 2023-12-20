@@ -41,6 +41,7 @@ function contentSecurityPolicyMiddleware(req, res, next) {
   ];
 
   res.set('Content-Security-Policy', directives.join(' '));
+  res.set('Cache-Control', 'public, max-age 86400');
 
   // Make this available for down-stream routes to reference and use
   res.locals.cspNonce = cspNonce;
