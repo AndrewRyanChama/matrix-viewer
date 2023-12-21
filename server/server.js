@@ -21,6 +21,6 @@ const installRoutes = require('./routes/install-routes');
 const app = express();
 installRoutes(app);
 
-const server = app.listen(basePort);
+const server = app.listen(basePort, '127.0.0.1');
 
 module.exports = server;

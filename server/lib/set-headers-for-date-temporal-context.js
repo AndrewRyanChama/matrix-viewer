@@ -31,7 +31,7 @@ function setHeadersForDateTemporalContext({ res, nowTs, comparedToUrlDate: { yyy
   res.set('X-Date-Temporal-Context', temporalContext);
 
   if (compareTs >= startOfTodayTs) {
-    res.set('Cache-Control', 'public, max-age 0');
+    res.set('Cache-Control', 'public, max-age=300');
   }
 }
 

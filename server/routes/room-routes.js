@@ -196,7 +196,7 @@ router.get(
     if (!originServerTs) {
       throw new StatusError(404, 'Unable to find day with history');
     }
-
+    res.set('Cache-Control', 'public, max-age=300');
     // Redirect to a day with messages
     res.redirect(
       matrixViewerURLCreator.roomUrlForDate(roomIdOrAlias, new Date(originServerTs), {

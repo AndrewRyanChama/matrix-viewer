@@ -75,6 +75,13 @@ function installRoutes(app) {
     identifyRoute('redirect-to-correct-room-url-if-bad-sigil'),
     redirectToCorrectRoomUrlIfBadSigil
   );
+
+  app.use((err, req, res, next) => {
+    if (!res.headersSent) {
+      res.set('Cache-Control', 'public, max-age=0');
+    }
+    next(err);
+  });
 }
 
 module.exports = installRoutes;
