@@ -34,7 +34,7 @@ async function getMessagesResponseFromEventId({
     matrixServerUrl,
     `_matrix/client/r0/rooms/${encodeURIComponent(roomId)}/context/${encodeURIComponent(
       eventId
-    )}?limit=0&filter={"lazy_load_members":true}`
+    )}?limit=0&filter={"lazy_load_members":true,"not_types":["m.room.member"]}`
   );
   const { data: contextResData } = await fetchEndpointAsJson(contextEndpoint, {
     accessToken,
@@ -60,7 +60,7 @@ async function getMessagesResponseFromEventId({
       roomId
     )}/messages?dir=${dir}&from=${encodeURIComponent(
       paginationToken
-    )}&limit=${limit}&filter={"lazy_load_members":true}`
+    )}&limit=${limit}&filter={"lazy_load_members":true,"not_types":["m.room.member"]}`
   );
   const { data: messageResData } = await fetchEndpointAsJson(messagesEndpoint, {
     accessToken,
