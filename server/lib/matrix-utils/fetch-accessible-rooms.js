@@ -16,7 +16,8 @@ const NUM_MAX_REQUESTS = 10;
 
 async function requestPublicRooms(
   accessToken,
-  { server, searchTerm, paginationToken, limit, abortSignal } = {}
+  { server, searchTerm, paginationToken, limit, abortSignal } = {},
+  roomType
 ) {
   let qs = new URLSearchParams();
   if (server) {
@@ -34,6 +35,7 @@ async function requestPublicRooms(
       include_all_networks: true,
       filter: {
         generic_search_term: searchTerm,
+        room_types: [roomType || null],
       },
       since: paginationToken,
       limit,
