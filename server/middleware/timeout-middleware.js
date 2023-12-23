@@ -115,6 +115,7 @@ async function timeoutMiddleware(req, res, next) {
     res.status(workaroundCloudflare504TimeoutErrors ? 500 : 504);
 
     res.set('Content-Type', 'text/html');
+    res.set('Cache-Control', 'public, max-age=300');
 
     res.send(pageHtml);
   }, requestTimeoutMs);
