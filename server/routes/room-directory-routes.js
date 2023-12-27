@@ -13,6 +13,7 @@ const identifyRoute = require('../middleware/identify-route-middleware');
 const fetchAccessibleRooms = require('../lib/matrix-utils/fetch-accessible-rooms');
 const renderHydrogenVmRenderScriptToPageHtml = require('../hydrogen-render/render-hydrogen-vm-render-script-to-page-html');
 const setHeadersToPreloadAssets = require('../lib/set-headers-to-preload-assets');
+const MatrixViewerURLCreator = require('../../shared/lib/url-creator');
 
 const config = require('../lib/config');
 const basePath = config.get('basePath');
@@ -29,6 +30,8 @@ const router = express.Router({
   // Preserve the req.params values from the parent router.
   mergeParams: true,
 });
+
+const _matrixViewerURLCreator = new MatrixViewerURLCreator(basePath);
 
 router.get(
   '/',
@@ -132,6 +135,44 @@ router.get(
 
     res.set('Content-Type', 'text/html');
     res.send(pageHtml);
+  })
+);
+
+router.get(
+  '/sitemap.txt',
+  identifyRoute('app-sitemap'),
+  asyncHandler(async function (req, res) {
+    const homeservers = ['matrix.org', 'midov.pl', 'cutefunny.art', 'lolisho.chat', 'gitter.im'];
+    let allRooms = (await Promise.all(homeservers.map(async (homeserver) => {
+      try {
+        let { rooms, nextPaginationToken, prevPaginationToken } = await fetchAccessibleRooms(
+          matrixAccessToken,
+          {
+            server: homeserver,
+            searchTerm: null,
+            paginationToken: null,
+            direction: 'f',
+            limit: 100,
+            abortSignal: req.abortSignal,
+            roomType: null,
+          },
+        );
+        return rooms;
+      } catch (err) {
+        console.log(err)
+        return [];
+      }
+    }))).reduce((set, serverRooms) => {
+      //console.log(serverRooms);
+      serverRooms.forEach(element => set.add(element));
+      return set;
+    }, new Set());
+    //console.log(allRooms.size);
+    res.set('Content-Type', 'text/plain');
+    res.send([...allRooms]
+      .filter(r => !!r.canonical_alias)
+      .map(r => _matrixViewerURLCreator.roomUrl(r.canonical_alias))
+      .join('\n'));
   })
 );
 
