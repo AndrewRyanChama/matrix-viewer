@@ -44,6 +44,7 @@ class RoomDirectoryViewModel extends ViewModel {
     this._pageSearchParameters = pageSearchParameters;
     // Default to what the page started with
     this._searchTerm = pageSearchParameters.searchTerm;
+    this._roomType = pageSearchParameters.roomType;
     this._nextPaginationToken = nextPaginationToken;
     this._prevPaginationToken = prevPaginationToken;
 
@@ -306,6 +307,7 @@ class RoomDirectoryViewModel extends ViewModel {
         searchTerm: this.searchTerm,
         paginationToken: this._nextPaginationToken,
         direction: DIRECTION.forward,
+        roomType: this._roomType,
       });
     }
 
@@ -319,6 +321,7 @@ class RoomDirectoryViewModel extends ViewModel {
         searchTerm: this.searchTerm,
         paginationToken: this._prevPaginationToken,
         direction: DIRECTION.backward,
+        roomType: this._roomType,
       });
     }
 

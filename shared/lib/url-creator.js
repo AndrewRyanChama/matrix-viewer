@@ -25,7 +25,7 @@ class URLCreator {
     return `https://matrix.to/#/${roomIdOrAlias}`;
   }
 
-  roomDirectoryUrl({ searchTerm, homeserver, paginationToken, direction } = {}) {
+  roomDirectoryUrl({ searchTerm, homeserver, paginationToken, direction, roomType } = {}) {
     // You must provide both `paginationToken` and `direction` if either is defined
     if (paginationToken || direction) {
       assert(
@@ -47,6 +47,9 @@ class URLCreator {
     }
     if (direction) {
       qs.append('dir', direction);
+    }
+    if (roomType) {
+      qs.append('roomType', roomType);
     }
 
     return `${this._basePath}${qsToUrlPiece(qs)}`;

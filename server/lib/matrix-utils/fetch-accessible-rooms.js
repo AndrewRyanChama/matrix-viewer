@@ -16,8 +16,7 @@ const NUM_MAX_REQUESTS = 10;
 
 async function requestPublicRooms(
   accessToken,
-  { server, searchTerm, paginationToken, limit, abortSignal } = {},
-  roomType
+  { server, searchTerm, paginationToken, limit, abortSignal, roomType } = {},
 ) {
   let qs = new URLSearchParams();
   if (server) {
@@ -59,6 +58,7 @@ async function fetchAccessibleRooms(
     direction = DIRECTION.forward,
     limit,
     abortSignal,
+    roomType,
   } = {}
 ) {
   assert(accessToken);
@@ -96,6 +96,7 @@ async function fetchAccessibleRooms(
       paginationToken: loopToken,
       limit: bulkPaginationLimit,
       abortSignal,
+      roomType,
     });
     lastLoopToken = loopToken;
     lastResponse = publicRoomsRes;
@@ -130,9 +131,9 @@ async function fetchAccessibleRooms(
       }
 
       // Stop after we've reached the limit
-      if (accessibleRooms.length >= limit) {
-        break;
-      }
+      //if (accessibleRooms.length >= limit) {
+      //  break;
+      //}
 
       index += 1;
     }
@@ -150,6 +151,7 @@ async function fetchAccessibleRooms(
   // we assume it's good enough.
   let nextPaginationToken;
   let prevPaginationToken;
+  /*
   if (continuationIndex) {
     const publicRoomsRes = await requestPublicRooms(accessToken, {
       server,
@@ -181,6 +183,16 @@ async function fetchAccessibleRooms(
     } else {
       throw new Error(`Invalid direction: ${direction}`);
     }
+  }*/
+
+  if (direction === DIRECTION.forward) {
+    prevPaginationToken = firstResponse.prev_batch;
+    nextPaginationToken = lastResponse.next_batch;
+  } else if (direction === DIRECTION.backward) {
+    prevPaginationToken = lastResponse.prev_batch;
+    nextPaginationToken = firstResponse.next_batch;
+  } else {
+    throw new Error(`Invalid direction: ${direction}`);
   }
 
   return {

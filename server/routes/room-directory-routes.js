@@ -38,6 +38,7 @@ router.get(
     const homeserver = req.query.homeserver;
     const paginationToken = req.query.page;
     const direction = req.query.dir;
+    const roomType = req.query.roomType;
 
     // You must provide both `paginationToken` and `direction` if either is defined
     if (paginationToken || direction) {
@@ -68,7 +69,8 @@ router.get(
           direction,
           limit,
           abortSignal: req.abortSignal,
-        }
+          roomType,
+        },
       ));
     } catch (err) {
       if (err instanceof RouteTimeoutAbortError || err instanceof UserClosedConnectionAbortError) {
@@ -115,6 +117,7 @@ router.get(
           searchTerm,
           paginationToken,
           limit,
+          roomType
         },
         config: {
           basePath,
