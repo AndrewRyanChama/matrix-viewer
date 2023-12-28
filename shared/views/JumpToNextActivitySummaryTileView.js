@@ -14,7 +14,8 @@ class JumpToNextActivitySummaryTileView extends TemplateView {
     if (kind === 'no-events-at-all') {
       daySummaryMessage = `We couldn't find any activity at or before ${selectedDayString}.`;
     } else if (kind === 'no-events-in-day') {
-      daySummaryMessage = `We couldn't find any activity for ${selectedDayString}. But there is activity before this day as shown above.`;
+      //daySummaryMessage = `We couldn't find any activity for ${selectedDayString}. But there is activity before this day as shown above.`;
+      daySummaryMessage = null;
     } else if (kind === 'some-events-in-day') {
       daySummaryMessage = null;
     } else {
