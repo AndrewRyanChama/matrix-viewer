@@ -193,12 +193,19 @@ router.get(
     //res.send('todo');
     let roomFetchError;
     let rooms;
+    let title;
+    let topic;
     try {
       const roomId = await ensureRoomJoined(matrixAccessToken, roomIdOrAlias, {
         viaServers,
         abortSignal: req.abortSignal,
       });
       rooms = await fetchSpaceRooms(matrixAccessToken, {}, roomId);
+
+      // find the matching room
+      const matchingRoom = rooms?.find(room => room.room_id === roomId);
+      title = matchingRoom?.name;
+      topic = matchingRoom?.topic;
     } catch (err) {
       if (err instanceof RouteTimeoutAbortError || err instanceof UserClosedConnectionAbortError) {
         // Throw an error so we stop processing and assembling the page after we abort
@@ -213,9 +220,8 @@ router.get(
 
 
     const pageOptions = {
-      title: `test title`,
-      description:
-        'test description',
+      title,
+      description: topic,
       entryPoint: 'client/js/entry-client-room-directory.js',
       locationUrl: urlJoin(basePath, req.originalUrl),
       shouldIndex: true,
