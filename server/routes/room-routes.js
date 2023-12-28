@@ -171,41 +171,168 @@ router.get(
   '/',
   identifyRoute('app-room-index'),
   asyncHandler(async function (req, res) {
+    const nowTs = Date.now();
     const roomIdOrAlias = getRoomIdOrAliasFromReq(req);
+    // We pull this fresh from the config for each request to ensure we have an
+    // updated value between each e2e test
+    const messageLimit = config.get('messageLimit');
+    assert(messageLimit);
+    // Synapse has a max `/messages` limit of 1000
+    assert(
+      messageLimit <= 999,
+      'messageLimit needs to be in range [1, 999]. We can only get 1000 messages at a time from Synapse and we need a buffer of at least one to see if there are too many messages on a given day so you can only configure a max of 999. If you need more messages, we will have to implement pagination'
+    );
 
-    // In case we're joining a new room for the first time,
-    // let's avoid redirecting to our join event by getting
-    // the time before we join and looking backwards.
-    const dateBeforeJoin = Date.now();
+    //const { toTimestamp, yyyy, mm, dd } =
+    //  parseDateTimeInfoFromReq(req);
+    const toTimestamp = nowTs;
+    const dateConverted = new Date(nowTs);
+    const yyyy = dateConverted.getFullYear();
+    const mm = dateConverted.getMonth() + 1;
+    const dd = dateConverted.getDate();
+
+    let precisionFromUrl = TIME_PRECISION_VALUES.none;
 
     // We have to wait for the room join to happen first before we can fetch
     // any of the additional room info or messages.
+    //
+    // XXX: It would be better if we just tried fetching first and assume that we are
+    // already joined and only join after we see a 403 Forbidden error (we should do
+    // this for all places we `ensureRoomJoined`). But we need the `roomId` for use with
+    // the various Matrix API's anyway and `/join/{roomIdOrAlias}` -> `{ room_id }` is a
+    // great way to get it (see
+    // https://github.com/matrix-org/matrix-viewer/issues/50).
+    const viaServers = parseViaServersFromUserInput(req.query.via);
     const roomId = await ensureRoomJoined(matrixAccessToken, roomIdOrAlias, {
-      viaServers: parseViaServersFromUserInput(req.query.via),
+      viaServers,
       abortSignal: req.abortSignal,
     });
 
-    // Find the closest day to the current time with messages
-    const { originServerTs } = await timestampToEvent({
-      accessToken: matrixAccessToken,
-      roomId,
-      ts: dateBeforeJoin,
-      direction: DIRECTION.backward,
+    // Do these in parallel to avoid the extra time in sequential round-trips
+    // (we want to display the page faster)
+    const [roomData, { events, stateEventMap }] = await Promise.all([
+      fetchRoomData(matrixAccessToken, roomId, { abortSignal: req.abortSignal }),
+      // We over-fetch messages outside of the range of the given day so that we
+      // can display messages from surrounding days (currently only from days
+      // before) so that the quiet rooms don't feel as desolate and broken.
+      //
+      // When given a bare date like `2022/11/16`, we want to paginate from the end of that
+      // day backwards. This is why we use the `toTimestamp` here and fetch backwards.
+      fetchEventsFromTimestampBackwards({
+        accessToken: matrixAccessToken,
+        roomId,
+        ts: toTimestamp,
+        // We fetch one more than the `messageLimit` so that we can see if there
+        // are too many messages from the given day. If we have over the
+        // `messageLimit` number of messages fetching from the given day, it's
+        // acceptable to have them be from surrounding days. But if all 500 messages
+        // (for example) are from the same day, let's redirect to a smaller hour range
+        // to display.
+        limit: messageLimit + 1,
+        abortSignal: req.abortSignal,
+      }),
+    ]);
+
+    // Only `world_readable` rooms are viewable
+    const allowedToViewRoom = roomData.historyVisibility === 'world_readable';
+
+    if (!allowedToViewRoom) {
+      throw new StatusError(
+        403,
+        `Only \`world_readable\` rooms can be viewed with Matrix Viewer. ` +
+          `${roomData.id} has m.room.history_visiblity=${roomData.historyVisibility} ` +
+          `(set by ${roomData.historyVisibilityEventMeta?.sender} on ` +
+          `${new Date(roomData.historyVisibilityEventMeta?.originServerTs).toISOString()})`
+      );
+    }
+
+    // Default to no indexing (safe default)
+    let shouldIndex = false;
+    const stopSearchEngineIndexingFromConfig = config.get('stopSearchEngineIndexing');
+    if (stopSearchEngineIndexingFromConfig) {
+      shouldIndex = false;
+    } else {
+      // Otherwise we only allow search engines to index `world_readable` rooms
+      shouldIndex = roomData?.historyVisibility === `world_readable`;
+    }
+
+    const isNsfw = checkTextForNsfw(
+      // We concat the name, topic, etc together to simply do a single check against
+      // all of the text.
+      `${roomData.name} --- ${roomData.canonicalAlias} --- ${roomData.topic} `
+    );
+
+    const pageOptions = {
+      title: `${roomData.name} - Matrix Viewer`,
+      description: `View the history of the ${roomData.name} room in the Matrix Viewer`,
+      imageUrl:
+        roomData.avatarUrl &&
+        mxcUrlToHttpThumbnail({
+          mxcUrl: roomData.avatarUrl,
+          homeserverUrl: matrixServerUrl,
+          size: 256,
+        }),
+      blockedBySafeSearch: isNsfw,
+      entryPoint: 'client/js/entry-client-hydrogen.js',
+      locationUrl: urlJoin(basePath, req.originalUrl),
+      canonicalUrl: matrixViewerURLCreator.roomUrlForDate(
+        roomData.canonicalAlias || roomIdOrAlias,
+        new Date(toTimestamp),
+        {
+          preferredPrecision: precisionFromUrl,
+          // We purposely omit `scrollStartEventId` here because the canonical location
+          // for any given event ID is the page it resides on.
+          //
+          // We can avoid passing along the `viaServers` because we already joined the
+          // room above (see `ensureRoomJoined`).
+        }
+      ),
+      shouldIndex,
+      cspNonce: res.locals.cspNonce,
+    };
+    const pageHtml = await renderHydrogenVmRenderScriptToPageHtml({
+      pageOptions,
+      vmRenderScriptFilePath: path.resolve(__dirname, '../../shared/hydrogen-vm-render-script.js'),
+      vmRenderContext: {
+        toTimestamp,
+        precisionFromUrl,
+        roomData: {
+          ...roomData,
+          // The `canonicalAlias` will take precedence over the `roomId` when present so we only
+          // want to use it if that's what the user originally browsed to. We shouldn't
+          // try to switch someone over to the room alias if they browsed from the room
+          // ID or vice versa.
+          canonicalAlias:
+            roomIdOrAlias === roomData.canonicalAlias ? roomData.canonicalAlias : undefined,
+        },
+        events,
+        stateEventMap,
+        shouldIndex,
+        config: {
+          basePath,
+          matrixServerUrl,
+          messageLimit,
+        },
+      },
       abortSignal: req.abortSignal,
     });
-    if (!originServerTs) {
-      throw new StatusError(404, 'Unable to find day with history');
-    }
-    res.set('Cache-Control', 'public, max-age=300');
-    // Redirect to a day with messages
-    res.redirect(
-      matrixViewerURLCreator.roomUrlForDate(roomIdOrAlias, new Date(originServerTs), {
-        // We can avoid passing along the `via` query parameter because we already
-        // joined the room above (see `ensureRoomJoined`).
-        //
-        //viaServers: parseViaServersFromUserInput(req.query.via),
-      })
-    );
+
+    setHeadersToPreloadAssets(res, pageOptions);
+
+    // This is useful for caching purposes so you can heavily cache past content, but
+    // not present/future.
+    setHeadersForDateTemporalContext({
+      res,
+      nowTs,
+      comparedToUrlDate: {
+        yyyy,
+        mm,
+        dd,
+      },
+    });
+
+    res.set('Content-Type', 'text/html');
+    res.send(pageHtml);
   })
 );
 
