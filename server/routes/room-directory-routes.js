@@ -6,7 +6,7 @@ const urlJoin = require('url-join');
 const express = require('express');
 const asyncHandler = require('../lib/express-async-handler');
 
-const { DIRECTION } = require('matrix-viewer-shared/lib/reference-values');
+const { DIRECTION, VALID_ENTITY_DESCRIPTOR_TO_SIGIL_MAP } = require('matrix-viewer-shared/lib/reference-values');
 const RouteTimeoutAbortError = require('../lib/errors/route-timeout-abort-error');
 const UserClosedConnectionAbortError = require('../lib/errors/user-closed-connection-abort-error');
 const identifyRoute = require('../middleware/identify-route-middleware');
@@ -14,6 +14,9 @@ const fetchAccessibleRooms = require('../lib/matrix-utils/fetch-accessible-rooms
 const renderHydrogenVmRenderScriptToPageHtml = require('../hydrogen-render/render-hydrogen-vm-render-script-to-page-html');
 const setHeadersToPreloadAssets = require('../lib/set-headers-to-preload-assets');
 const MatrixViewerURLCreator = require('../../shared/lib/url-creator');
+const parseViaServersFromUserInput = require('../lib/parse-via-servers-from-user-input');
+const fetchSpaceRooms = require('../lib/matrix-utils/fetch-space-rooms');
+const ensureRoomJoined = require('../lib/matrix-utils/ensure-room-joined');
 
 const config = require('../lib/config');
 const basePath = config.get('basePath');
@@ -173,6 +176,80 @@ router.get(
       .filter(r => !!r.canonical_alias)
       .map(r => _matrixViewerURLCreator.roomUrl(r.canonical_alias))
       .join('\n'));
+  })
+);
+
+router.get(
+  '/space/:roomIdOrAliasDirty',
+  identifyRoute('app-space'),
+  asyncHandler(async function (req, res) {
+    let roomIdOrAlias
+    if (!req.params.roomIdOrAliasDirty === '#' && !req.params.roomIdOrAliasDirty === '!') {
+      roomIdOrAlias = `#${req.params.roomIdOrAliasDirty}`;
+    } else {
+      roomIdOrAlias = req.params.roomIdOrAliasDirty;
+    }
+    const viaServers = parseViaServersFromUserInput(req.query.via);
+    //res.send('todo');
+    let roomFetchError;
+    let rooms;
+    try {
+      const roomId = await ensureRoomJoined(matrixAccessToken, roomIdOrAlias, {
+        viaServers,
+        abortSignal: req.abortSignal,
+      });
+      rooms = await fetchSpaceRooms(matrixAccessToken, {}, roomId);
+    } catch (err) {
+      if (err instanceof RouteTimeoutAbortError || err instanceof UserClosedConnectionAbortError) {
+        // Throw an error so we stop processing and assembling the page after we abort
+        throw err;
+      } else {
+        // Otherwise, this will be the error we will display on the page for the user to
+        // explain why we failed to fetch the rooms they wanted.
+        roomFetchError = err;
+      }
+    }
+
+
+    const pageOptions = {
+      title: `test title`,
+      description:
+        'test description',
+      entryPoint: 'client/js/entry-client-room-directory.js',
+      locationUrl: urlJoin(basePath, req.originalUrl),
+      shouldIndex: true,
+      cspNonce: res.locals.cspNonce,
+    };
+    const pageHtml = await renderHydrogenVmRenderScriptToPageHtml({
+      pageOptions,
+      vmRenderScriptFilePath: path.resolve(
+        __dirname,
+        '../../shared/room-directory-vm-render-script.js'
+      ),
+      vmRenderContext: {
+        rooms: rooms.filter(room => room.world_readable),
+        roomFetchError: roomFetchError
+          ? {
+              message: roomFetchError.message,
+              stack: roomFetchError.stack,
+            }
+          : null,
+        pageSearchParameters: {
+          homeserver: matrixServerName
+        },
+        config: {
+          basePath,
+          matrixServerUrl,
+          matrixServerName,
+        },
+      },
+      abortSignal: req.abortSignal,
+    });
+
+    setHeadersToPreloadAssets(res, pageOptions);
+
+    res.set('Content-Type', 'text/html');
+    res.send(pageHtml);
   })
 );
 

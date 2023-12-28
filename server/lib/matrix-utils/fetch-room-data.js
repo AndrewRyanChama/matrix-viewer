@@ -155,6 +155,7 @@ const fetchRoomData = traceFunction(async function (
     stateCanonicalAliasResDataOutcome,
     stateAvatarResDataOutcome,
     stateHistoryVisibilityResDataOutcome,
+    roomCreateOutcome,
     predecessorInfoOutcome,
     successorInfoOutcome,
   ] = await Promise.allSettled([
@@ -181,6 +182,10 @@ const fetchRoomData = traceFunction(async function (
         abortSignal,
       }
     ),
+    fetchEndpointAsJson(getStateEndpointForRoomIdAndEventType(roomId, 'm.room.create'), {
+      accessToken: matrixAccessToken,
+      abortSignal,
+    }),
     fetchPredecessorInfo(matrixAccessToken, roomId, { abortSignal }),
     fetchSuccessorInfo(matrixAccessToken, roomId, { abortSignal }),
   ]);
@@ -221,6 +226,11 @@ const fetchRoomData = traceFunction(async function (
     };
   }
 
+  let roomCreateData;
+  if (roomCreateOutcome.reason === undefined) {
+    roomCreateData = roomCreateOutcome.value.data.content;
+  }
+
   let roomCreationTs;
   let predecessorRoomId;
   let predecessorLastKnownEventId;
@@ -253,6 +263,7 @@ const fetchRoomData = traceFunction(async function (
     predecessorViaServers,
     successorRoomId,
     successorSetTs,
+    roomCreateData,
   };
 });
 

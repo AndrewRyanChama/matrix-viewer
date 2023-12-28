@@ -236,6 +236,14 @@ router.get(
     // Only `world_readable` rooms are viewable
     const allowedToViewRoom = roomData.historyVisibility === 'world_readable';
 
+    //console.log("el data");
+    //console.log(roomData);
+    if (roomData.roomCreateData?.type === 'm.space') {
+      // redirect to the space
+      res.redirect(302, matrixViewerURLCreator.spaceUrl(roomIdOrAlias));
+      return;
+    }
+
     if (!allowedToViewRoom) {
       throw new StatusError(
         403,

@@ -172,6 +172,25 @@ class URLCreator {
 
     return `${urlJoin(this._basePath, `${urlPath}/jump`)}${qsToUrlPiece(qs)}`;
   }
+
+  spaceUrl(
+    roomIdOrAlias,
+    { viaServers = [] } = {}
+  ) {
+    assert(roomIdOrAlias);
+    assert(Array.isArray(viaServers));
+    let qs = new URLSearchParams();
+    [].concat(viaServers).forEach((viaServer) => {
+      qs.append('via', viaServer);
+    });
+
+    const urlPath = `/space/${roomIdOrAlias.replace(/^#/, '')}`;
+
+    return `${urlJoin(
+      this._basePath,
+      urlPath,
+    )}${qsToUrlPiece(qs)}`;
+  }
 }
 
 module.exports = URLCreator;
