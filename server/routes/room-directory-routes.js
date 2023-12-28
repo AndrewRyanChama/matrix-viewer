@@ -207,6 +207,7 @@ router.get(
         // Otherwise, this will be the error we will display on the page for the user to
         // explain why we failed to fetch the rooms they wanted.
         roomFetchError = err;
+        console.log(err);
       }
     }
 
@@ -227,7 +228,7 @@ router.get(
         '../../shared/room-directory-vm-render-script.js'
       ),
       vmRenderContext: {
-        rooms: rooms.filter(room => room.world_readable),
+        rooms: rooms?.filter(room => room.world_readable),
         roomFetchError: roomFetchError
           ? {
               message: roomFetchError.message,
