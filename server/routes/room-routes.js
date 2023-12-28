@@ -275,7 +275,7 @@ router.get(
       blockedBySafeSearch: isNsfw,
       entryPoint: 'client/js/entry-client-hydrogen.js',
       locationUrl: urlJoin(basePath, req.originalUrl),
-      canonicalUrl: matrixViewerURLCreator.roomUrlForDate(
+      /*canonicalUrl: matrixViewerURLCreator.roomUrlForDate(
         roomData.canonicalAlias || roomIdOrAlias,
         new Date(toTimestamp),
         {
@@ -286,7 +286,7 @@ router.get(
           // We can avoid passing along the `viaServers` because we already joined the
           // room above (see `ensureRoomJoined`).
         }
-      ),
+      ),*/
       shouldIndex,
       cspNonce: res.locals.cspNonce,
     };
@@ -1035,7 +1035,7 @@ router.get(
       blockedBySafeSearch: isNsfw,
       entryPoint: 'client/js/entry-client-hydrogen.js',
       locationUrl: urlJoin(basePath, req.originalUrl),
-      canonicalUrl: matrixViewerURLCreator.roomUrlForDate(
+      /*: matrixViewerURLCreator.roomUrlForDate(
         roomData.canonicalAlias || roomIdOrAlias,
         new Date(toTimestamp),
         {
@@ -1046,7 +1046,7 @@ router.get(
           // We can avoid passing along the `viaServers` because we already joined the
           // room above (see `ensureRoomJoined`).
         }
-      ),
+      ),*/
       shouldIndex,
       cspNonce: res.locals.cspNonce,
     };
