@@ -184,7 +184,7 @@ router.get(
   identifyRoute('app-space'),
   asyncHandler(async function (req, res) {
     let roomIdOrAlias
-    if (!req.params.roomIdOrAliasDirty === '#' && !req.params.roomIdOrAliasDirty === '!') {
+    if (!req.params.roomIdOrAliasDirty[0] === '#' && !req.params.roomIdOrAliasDirt[0] === '!') {
       roomIdOrAlias = `#${req.params.roomIdOrAliasDirty}`;
     } else {
       roomIdOrAlias = req.params.roomIdOrAliasDirty;
