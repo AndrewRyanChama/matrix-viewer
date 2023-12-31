@@ -208,6 +208,7 @@ class RoomViewModel extends ViewModel {
       activeViewModel: {
         // Our own custom options
         type: 'custom',
+        room,
         customView: RightPanelContentView,
         calendarViewModel: this._calendarViewModel,
         shouldShowTimeSelector,

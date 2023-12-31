@@ -49,6 +49,7 @@ class RightPanelContentView extends TemplateView {
             className: 'RightPanelContentView_footer',
           },
           [
+            t.p([vm.room.topic]),
             t.p([
               `This room is accessible because it was set to ` +
                 `${historyVisibilityDisplayValue} by ${historyVisibilitySender} on ${historyVisibilitySetDatePiece}.`,
