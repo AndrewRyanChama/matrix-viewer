@@ -5,7 +5,6 @@ const express = require('express');
 const cors = require('cors');
 const asyncHandler = require('../lib/express-async-handler');
 
-const timeoutMiddleware = require('../middleware/timeout-middleware');
 const { handleTracingMiddleware } = require('../tracing/tracing-middleware');
 const getVersionTags = require('../lib/get-version-tags');
 const preventClickjackingMiddleware = require('../middleware/prevent-clickjacking-middleware');
@@ -50,12 +49,11 @@ function installRoutes(app) {
   // Our own viewer app styles and scripts
   app.use('/assets', express.static(path.join(__dirname, '../../dist/assets')));
 
-  app.use('/', timeoutMiddleware, require('./room-directory-routes'));
+  app.use('/', require('./room-directory-routes'));
 
   // For room aliases (/r) or room ID's (/roomid)
   app.use(
     '/:entityDescriptor(r|roomid)/:roomIdOrAliasDirty',
-    timeoutMiddleware,
     require('./room-routes')
   );
 
