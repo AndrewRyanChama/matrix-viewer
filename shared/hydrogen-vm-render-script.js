@@ -51,7 +51,7 @@ async function mountHydrogen() {
   const appElement = document.querySelector('#app');
 
   const qs = new URLSearchParams(window?.location?.search);
-  const scrollStartEventId = qs.get('at');
+  const scrollStartEventId = window.matrixViewerContext.at || qs.get('at');
 
   const platformConfig = {};
   const assetPaths = {};
