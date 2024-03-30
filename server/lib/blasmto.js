@@ -67,7 +67,7 @@ function parsePermalink(fullUrl) {
             // room without event permalink
             const [roomId, query = ""] = entity.split("?");
             const via = query.split(/&?via=/g).filter((p) => !!p);
-            return `gaytrix.org/r/${roomId.substring(1)}`;
+            return `view.gaytrix.org/r/${roomId.substring(1)}`;
         }
 
         // rejoin the rest because v3 events can have slashes (annoyingly)
@@ -75,13 +75,13 @@ function parsePermalink(fullUrl) {
         const [eventId, query = ""] = eventIdAndQuery.split("?");
         const via = query.split(/&?via=/g).filter((p) => !!p);
 
-        return `gaytrix.org/r/${entity.substring(1)}/event/${eventId}`;
+        return `view.gaytrix.org/r/${entity.substring(1)}/event/${eventId}`;
     } else if (entity[0] === "!") {
         if (parts.length === 1) {
             // room without event permalink
             const [roomId, query = ""] = entity.split("?");
             const via = query.split(/&?via=/g).filter((p) => !!p);
-            return `gaytrix.org/roomid/${roomId.substring(1)}`;
+            return `view.gaytrix.org/roomid/${roomId.substring(1)}`;
         }
 
         // rejoin the rest because v3 events can have slashes (annoyingly)
@@ -89,7 +89,7 @@ function parsePermalink(fullUrl) {
         const [eventId, query = ""] = eventIdAndQuery.split("?");
         const via = query.split(/&?via=/g).filter((p) => !!p);
 
-        return `gaytrix.org/roomid/${entity.substring(1)}/event/${eventId}`;
+        return `view.gaytrix.org/roomid/${entity.substring(1)}/event/${eventId}`;
     } else {
         throw new Error("Unknown entity type in permalink" + fullUrl);
     }

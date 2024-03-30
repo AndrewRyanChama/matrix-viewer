@@ -1095,6 +1095,7 @@ router.get(
       }),
     ]);
     blastEvts(events);
+    console.log(events);
 
     // Since we're looking backwards from the given day, if we don't see any events,
     // then we can assume that it's before the start of the room (it's the only way we
