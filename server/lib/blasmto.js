@@ -51,7 +51,8 @@ function parsePermalink(fullUrl) {
     if (!fullUrl) {
         throw new Error("Does not appear to be a permalink");
     }
-
+    // YOLO
+    fullUrl = decodeURIComponent(fullUrl);
     const matches = [...fullUrl.matchAll(new RegExp(baseUrlPattern, "gi"))][0];
 
     if (!matches || matches.length < 2) {
