@@ -91,7 +91,8 @@ function parsePermalink(fullUrl) {
 
         return `view.gaytrix.org/roomid/${entity.substring(1)}/event/${eventId}`;
     } else {
-        throw new Error("Unknown entity type in permalink" + fullUrl);
+        console.log("Unknown entity type in permalink: " + fullUrl);
+        return fullUrl;
     }
 }
 
