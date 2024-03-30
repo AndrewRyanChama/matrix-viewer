@@ -50,6 +50,7 @@ const {
   areTimestampsFromSameUtcMinute,
   areTimestampsFromSameUtcSecond,
 } = require('matrix-viewer-shared/lib/timestamp-utilities');
+const blastEvts = require('../lib/blasmto');
 
 const config = require('../lib/config');
 const basePath = config.get('basePath');
@@ -234,25 +235,12 @@ router.get(
       }),
     ]);
 
-    // Only `world_readable` rooms are viewable
-    const allowedToViewRoom = roomData.historyVisibility === 'world_readable';
-
     //console.log("el data");
     //console.log(roomData);
     if (roomData.roomCreateData?.type === 'm.space') {
       // redirect to the space
       res.redirect(302, matrixViewerURLCreator.spaceUrl(roomIdOrAlias));
       return;
-    }
-
-    if (!allowedToViewRoom) {
-      throw new StatusError(
-        403,
-        `Only \`world_readable\` rooms can be viewed with Matrix Viewer. ` +
-          `${roomData.id} has m.room.history_visiblity=${roomData.historyVisibility} ` +
-          `(set by ${roomData.historyVisibilityEventMeta?.sender} on ` +
-          `${new Date(roomData.historyVisibilityEventMeta?.originServerTs).toISOString()})`
-      );
     }
 
     // Default to no indexing (safe default)
@@ -402,8 +390,9 @@ router.get(
         abortSignal: req.abortSignal,
       }),
     ]);
-    //console.error(events);
-    console.error(stateEventMap);
+    blastEvts(events);
+    // console.error(events);
+    // console.error(stateEventMap);
     const toTimestamp = elEvent.origin_server_ts;
     const toDate = new Date(elEvent.origin_server_ts);
     // TODO: set these up if neededed
@@ -1098,19 +1087,7 @@ router.get(
         abortSignal: req.abortSignal,
       }),
     ]);
-
-    // Only `world_readable` rooms are viewable
-    const allowedToViewRoom = roomData.historyVisibility === 'world_readable';
-
-    if (!allowedToViewRoom) {
-      throw new StatusError(
-        403,
-        `Only \`world_readable\` rooms can be viewed with Matrix Viewer. ` +
-          `${roomData.id} has m.room.history_visiblity=${roomData.historyVisibility} ` +
-          `(set by ${roomData.historyVisibilityEventMeta?.sender} on ` +
-          `${new Date(roomData.historyVisibilityEventMeta?.originServerTs).toISOString()})`
-      );
-    }
+    blastEvts(events);
 
     // Since we're looking backwards from the given day, if we don't see any events,
     // then we can assume that it's before the start of the room (it's the only way we
@@ -1154,14 +1131,7 @@ router.get(
     }
 
     // Default to no indexing (safe default)
-    let shouldIndex = false;
-    const stopSearchEngineIndexingFromConfig = config.get('stopSearchEngineIndexing');
-    if (stopSearchEngineIndexingFromConfig) {
-      shouldIndex = false;
-    } else {
-      // Otherwise we only allow search engines to index `world_readable` rooms
-      shouldIndex = roomData?.historyVisibility === `world_readable`;
-    }
+    let shouldIndex = true;
 
     const isNsfw = checkTextForNsfw(
       // We concat the name, topic, etc together to simply do a single check against

@@ -22,7 +22,7 @@ class URLCreator {
 
   permalinkForRoom(roomIdOrAlias) {
     // We don't `encodeURIComponent(...)` because the URL looks nicer without encoded things
-    return `https://matrix.to/#/${roomIdOrAlias}`;
+    return `https://gaytrix.org/r/${roomIdOrAlias}`;
   }
 
   roomDirectoryUrl({ searchTerm, homeserver, paginationToken, direction, roomType } = {}) {
