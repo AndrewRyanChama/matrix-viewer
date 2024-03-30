@@ -244,20 +244,20 @@ router.get(
     }
 
     // Default to no indexing (safe default)
-    let shouldIndex = false;
-    const stopSearchEngineIndexingFromConfig = config.get('stopSearchEngineIndexing');
-    if (stopSearchEngineIndexingFromConfig) {
-      shouldIndex = false;
-    } else {
-      // Otherwise we only allow search engines to index `world_readable` rooms
-      shouldIndex = roomData?.historyVisibility === `world_readable`;
-    }
+    let shouldIndex = true;
 
     const isNsfw = checkTextForNsfw(
       // We concat the name, topic, etc together to simply do a single check against
       // all of the text.
       `${roomData.name} --- ${roomData.canonicalAlias} --- ${roomData.topic} `
     );
+    
+    roomData.historyVisibilityEventMeta ||= {
+      historyVisibility: 'UNKNOWN',
+      sender: 'UNKNOWN',
+      originServerTs: 1
+    }
+    roomData.historyVisibility ||= "UNKNOWN";
 
     const pageOptions = {
       title: `${roomData.name} - Matrix Viewer`,
@@ -406,6 +406,13 @@ router.get(
 
     // Default to no indexing (safe default)
     let shouldIndex = true;
+
+    roomData.historyVisibilityEventMeta ||= {
+      historyVisibility: 'UNKNOWN',
+      sender: 'UNKNOWN',
+      originServerTs: 1
+    }
+    roomData.historyVisibility ||= "UNKNOWN";
 
     const pageOptions = {
       title: `${roomData.name} - Matrix Viewer`,
