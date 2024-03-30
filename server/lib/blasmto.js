@@ -14,8 +14,8 @@ function blastEvts(evts) {
 }
 
 function blast(mtostring) {
-    console.log(mtostring);
-    return mtostring.replace(/matrix\.to\/#\/[!a-zA-Z0-9_/#$!]+/g, mtoinstance => {
+    return mtostring.replace(/matrix\.to\/#\/[^\s)"]+/g, mtoinstance => {
+        console.log(mtoinstance);
         return parsePermalink(mtoinstance);
     });
 }
@@ -75,7 +75,7 @@ function parsePermalink(fullUrl) {
         const [eventId, query = ""] = eventIdAndQuery.split("?");
         const via = query.split(/&?via=/g).filter((p) => !!p);
 
-        return `gaytrix.org/r/${roomId.substring(1)}/event/${eventId}`;
+        return `gaytrix.org/r/${entity.substring(1)}/event/${eventId}`;
     } else if (entity[0] === "!") {
         if (parts.length === 1) {
             // room without event permalink
@@ -89,7 +89,7 @@ function parsePermalink(fullUrl) {
         const [eventId, query = ""] = eventIdAndQuery.split("?");
         const via = query.split(/&?via=/g).filter((p) => !!p);
 
-        return `gaytrix.org/roomid/${roomId.substring(1)}/event/${eventId}`;
+        return `gaytrix.org/roomid/${entity.substring(1)}/event/${eventId}`;
     } else {
         throw new Error("Unknown entity type in permalink" + fullUrl);
     }
