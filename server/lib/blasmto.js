@@ -14,9 +14,11 @@ function blastEvts(evts) {
 }
 
 function blast(mtostring) {
-    return mtostring.replace(/matrix\.to\/#\/[^\s)"]+/g, mtoinstance => {
+    return mtostring.replace(/matrix\.to\/#\/[^\s)"']+/g, mtoinstance => {
         console.log(mtoinstance);
-        return parsePermalink(mtoinstance);
+        const res = parsePermalink(mtoinstance);
+        console.log(res);
+        return res;
     });
 }
 
