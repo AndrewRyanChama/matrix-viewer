@@ -281,41 +281,41 @@ class RoomDirectoryView extends TemplateView {
             }
           ),
           // Otherwise, display the rooms that we fetched
-          t.section(
-            {
-              className:
-                'RoomDirectoryView_safeSearchToggleSection RoomDirectoryView_mainContentSection',
-            },
-            [
-              t.div({ className: 'RoomDirectoryView_safeSearchToggle' }, [
-                t.input({
-                  id: 'safeSearchEnabled',
-                  className: 'RoomDirectoryView_safeSearchToggleCheckbox',
-                  type: 'checkbox',
-                  checked: (vm) => vm.safeSearchEnabled,
-                  onInput: (event) => vm.setSafeSearchEnabled(event.target.checked),
-                }),
-                t.label(
-                  {
-                    className: 'RoomDirectoryView_safeSearchToggleLabel',
-                    for: 'safeSearchEnabled',
-                  },
-                  [
-                    t.map(
-                      (vm) => vm.safeSearchEnabled,
-                      (safeSearchEnabled /*, t, vm*/) => {
-                        if (safeSearchEnabled) {
-                          return text('Safe search is on');
-                        }
-
-                        return text('Safe search is off');
-                      }
-                    ),
-                  ]
-                ),
-              ]),
-            ]
-          ),
+//          t.section(
+//            {
+//              className:
+//                'RoomDirectoryView_safeSearchToggleSection RoomDirectoryView_mainContentSection',
+//            },
+//            [
+//              t.div({ className: 'RoomDirectoryView_safeSearchToggle' }, [
+//                t.input({
+//                  id: 'safeSearchEnabled',
+//                  className: 'RoomDirectoryView_safeSearchToggleCheckbox',
+//                  type: 'checkbox',
+//                  checked: (vm) => vm.safeSearchEnabled,
+//                  onInput: (event) => vm.setSafeSearchEnabled(event.target.checked),
+//                }),
+//                t.label(
+//                  {
+//                    className: 'RoomDirectoryView_safeSearchToggleLabel',
+//                    for: 'safeSearchEnabled',
+//                  },
+//                  [
+//                    t.map(
+//                      (vm) => vm.safeSearchEnabled,
+//                      (safeSearchEnabled /*, t, vm*/) => {
+//                        if (safeSearchEnabled) {
+//                          return text('Safe search is on');
+//                        }
+//
+//                        return text('Safe search is off');
+//                      }
+//                    ),
+//                  ]
+//                ),
+//              ]),
+//            ]
+//          ),
           t.view(roomList),
           t.div({ className: 'RoomDirectoryView_paginationButtonCombo' }, [
             t.a(

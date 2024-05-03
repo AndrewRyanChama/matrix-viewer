@@ -238,25 +238,26 @@ class RoomDirectoryViewModel extends ViewModel {
   loadSafeSearchEnabledFromPersistence() {
     // Safe search is enabled by default and only disabled with the correct 'false' value
     let safeSearchEnabled = true;
-
-    if (window.localStorage) {
-      const safeSearchEnabledFromPersistence = window.localStorage.getItem(
-        LOCAL_STORAGE_KEYS.safeSearchEnabled
-      );
-
-      if (safeSearchEnabledFromPersistence === 'false') {
-        safeSearchEnabled = false;
-      }
-    } else {
-      console.warn(
-        `Skipping \`${LOCAL_STORAGE_KEYS.safeSearchEnabled}\` read from LocalStorage since LocalStorage is not available`
-      );
-    }
-
+//
+//    if (window.localStorage) {
+//      const safeSearchEnabledFromPersistence = window.localStorage.getItem(
+//        LOCAL_STORAGE_KEYS.safeSearchEnabled
+//      );
+//
+//      if (safeSearchEnabledFromPersistence === 'false') {
+//        safeSearchEnabled = false;
+//      }
+//    } else {
+//      console.warn(
+//        `Skipping \`${LOCAL_STORAGE_KEYS.safeSearchEnabled}\` read from LocalStorage since LocalStorage is not available`
+//      );
+//    }
+//
     this.setSafeSearchEnabled(safeSearchEnabled);
   }
 
   setSafeSearchEnabled(safeSearchEnabled) {
+    safeSearchEnabled = true;
     this._safeSearchEnabled = safeSearchEnabled;
     if (window.localStorage) {
       window.localStorage.setItem(
