@@ -1,6 +1,6 @@
 # Matrix Viewer
 
-<a href="https://matrix.to/#/#matrix-viewer:matrix.org"><img src="https://img.shields.io/matrix/matrix-viewer:matrix.org.svg?label=%23matrix-viewer%3Amatrix.org&logo=matrix&server_fqdn=matrix.org" alt="Join the community and get support at #matrix-viewer:matrix.org" /></a>
+<a href="https://view.gaytrix.org/r/matrix-viewer:matrix.org"><img src="https://img.shields.io/matrix/matrix-viewer:matrix.org.svg?label=%23matrix-viewer%3Amatrix.org&logo=matrix&server_fqdn=matrix.org" alt="Join the community and get support at #matrix-viewer:matrix.org" /></a>
 
 > **Note**
 > The Matrix Public Archive has been renamed to Matrix Viewer to better reflect what it
