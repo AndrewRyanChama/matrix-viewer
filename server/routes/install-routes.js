@@ -49,6 +49,14 @@ function installRoutes(app) {
   // Our own viewer app styles and scripts
   app.use('/assets', express.static(path.join(__dirname, '../../dist/assets')));
 
+  app.use('/robots.txt', function (req, res, next) {
+    res.type('text/plain')
+    res.send(
+      `User-agent: *
+       Disallow: /r*/jump
+       Disallow: /r*/date/20*at=`);
+  });
+
   app.use('/', require('./room-directory-routes'));
 
   // For room aliases (/r) or room ID's (/roomid)

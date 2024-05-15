@@ -252,6 +252,11 @@ router.get(
       // all of the text.
       `${roomData.name} --- ${roomData.canonicalAlias} --- ${roomData.topic} `
     );
+    if (isNsfw) {
+      res.status(403);
+      res.send(`blocked nsfw`);
+      return;
+    }
     
     roomData.historyVisibilityEventMeta ||= {
       historyVisibility: 'UNKNOWN',
@@ -262,7 +267,7 @@ router.get(
 
     const pageOptions = {
       title: `${roomData.name} - Matrix Viewer`,
-      description: `View the history of the ${roomData.name} room in the Matrix Viewer`,
+      description: roomData.topic || `View the history of the ${roomData.name} room in the Matrix Viewer`,
       imageUrl:
         roomData.avatarUrl &&
         mxcUrlToHttpThumbnail({
@@ -407,6 +412,16 @@ router.get(
 
     // Default to no indexing (safe default)
     let shouldIndex = true;
+    const isNsfw = checkTextForNsfw(
+      // We concat the name, topic, etc together to simply do a single check against
+      // all of the text.
+      `${roomData.name} --- ${roomData.canonicalAlias} --- ${roomData.topic} `
+    );
+    if (isNsfw) {
+      res.status(403);
+      res.send(`blocked nsfw`);
+      return;
+    }
 
     roomData.historyVisibilityEventMeta ||= {
       historyVisibility: 'UNKNOWN',
@@ -417,7 +432,7 @@ router.get(
 
     const pageOptions = {
       title: `${roomData.name} - Matrix Viewer`,
-      description: `View the history of the ${roomData.name} room in the Matrix Viewer`,
+      description: roomData.topic || `View the history of the ${roomData.name} room in the Matrix Viewer`,
       imageUrl:
         roomData.avatarUrl &&
         mxcUrlToHttpThumbnail({
@@ -1140,16 +1155,20 @@ router.get(
 
     // Default to no indexing (safe default)
     let shouldIndex = true;
-
     const isNsfw = checkTextForNsfw(
       // We concat the name, topic, etc together to simply do a single check against
       // all of the text.
       `${roomData.name} --- ${roomData.canonicalAlias} --- ${roomData.topic} `
     );
+    if (isNsfw) {
+      res.status(403);
+      res.send(`blocked nsfw`);
+      return;
+    }
 
     const pageOptions = {
       title: `${roomData.name} - Matrix Viewer`,
-      description: `View the history of the ${roomData.name} room in the Matrix Viewer`,
+      description: roomData.topic || `View the history of the ${roomData.name} room in the Matrix Viewer`,
       imageUrl:
         roomData.avatarUrl &&
         mxcUrlToHttpThumbnail({
